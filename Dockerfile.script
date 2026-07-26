@@ -1,0 +1,17 @@
+FROM remnux/remnux-distro:noble
+
+USER root
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN python3 -m venv /opt/script-mcp \
+    && /opt/script-mcp/bin/pip install --no-cache-dir "mcp[cli]"
+
+COPY script_mcp_server.py /opt/script_mcp_server.py
+
+RUN mkdir -p /home/remnux/samples \
+    && chown -R remnux:remnux /home/remnux/samples /opt/script-mcp
+
+USER remnux
+WORKDIR /home/remnux
+
+ENTRYPOINT ["/opt/script-mcp/bin/python", "/opt/script_mcp_server.py"]

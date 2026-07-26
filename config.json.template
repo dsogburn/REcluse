@@ -1,0 +1,10 @@
+{
+  "api_key": "",
+  "api_base_url": "http://127.0.0.1:11434",
+  "model": "ollama/mistral-nemo:12b",
+  "reports_dir": "reports",
+  "archive_password": "infected",
+  "max_turns": 20,
+  "max_tool_errors": 5,
+  "verbose": false
+}

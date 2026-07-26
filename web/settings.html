@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings — REcluse</title>
+  <link rel="icon" href="/recluse-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand-mark"><img src="/recluse-mark.svg" alt=""></span>
+      <span><strong><em>RE</em>cluse</strong><small>Analyst Console</small></span>
+    </a>
+    <a class="settings-link" href="/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+      <span>Back to analysis</span>
+    </a>
+  </header>
+
+  <main class="settings-shell">
+    <section class="settings-intro">
+      <p class="eyebrow">PERSISTENT CONFIGURATION</p>
+      <h1>Analysis settings</h1>
+      <p>These values are written to <code>config.json</code> and become the defaults for both the command line and analyst console.</p>
+    </section>
+
+    <form id="settings-form" class="settings-layout">
+      <div class="settings-main">
+        <section class="settings-card">
+          <div class="settings-card-heading">
+            <span class="settings-icon">↗</span>
+            <div><h2>Model connection</h2><p>Use local Ollama, a remote inference server, or a hosted provider.</p></div>
+          </div>
+          <div class="settings-fields">
+            <label class="field">
+              <span>Model identifier</span>
+              <input id="settings-model" type="text" required placeholder="ollama/mistral-nemo:12b">
+              <small>Include the LiteLLM provider prefix, such as <code>ollama/</code>, <code>openai/</code>, or <code>anthropic/</code>.</small>
+            </label>
+            <label class="field">
+              <span>Endpoint URL</span>
+              <input id="settings-endpoint" type="url" placeholder="https://inference.example.com">
+              <small>Leave blank to use the provider's standard endpoint. Remote Ollama example: <code>http://server:11434</code>.</small>
+            </label>
+            <label class="field">
+              <span>API key</span>
+              <div class="secret-input"><input id="settings-api-key" type="password" autocomplete="new-password" placeholder="Enter a new key"><span id="key-state"></span></div>
+              <small>Stored locally in <code>config.json</code>. Leave blank to preserve the existing key.</small>
+            </label>
+            <label id="clear-key-row" class="check-field compact hidden">
+              <input id="clear-api-key" type="checkbox">
+              <span class="check-box"></span>
+              <span><strong>Remove stored API key</strong><small>Clear the existing credential when settings are saved</small></span>
+            </label>
+          </div>
+        </section>
+
+        <section class="settings-card">
+          <div class="settings-card-heading">
+            <span class="settings-icon">⌁</span>
+            <div><h2>Analysis defaults</h2><p>Pre-fill new jobs and CLI runs with your preferred limits.</p></div>
+          </div>
+          <div class="settings-fields two-column">
+            <label class="field field-wide">
+              <span>Reports directory</span>
+              <input id="settings-reports" type="text" required>
+            </label>
+            <label class="field">
+              <span>Archive password</span>
+              <input id="settings-password" type="text">
+            </label>
+            <label class="field">
+              <span>Maximum turns</span>
+              <input id="settings-turns" type="number" min="1" max="200" required>
+            </label>
+            <label class="field">
+              <span>Tool-error limit</span>
+              <input id="settings-errors" type="number" min="1" max="100" required>
+            </label>
+            <label class="check-field compact">
+              <input id="settings-verbose" type="checkbox">
+              <span class="check-box"></span>
+              <span><strong>Verbose diagnostics</strong><small>Default to full runtime tracebacks</small></span>
+            </label>
+          </div>
+        </section>
+      </div>
+
+      <aside class="settings-aside">
+        <div class="settings-note">
+          <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 2.8 8.6 7 10 4.2-1.4 7-5.5 7-10V6l-7-3Z"/><path d="M12 8v5m0 3h.01"/></svg>
+          <h3>Connection guidance</h3>
+          <p>For a remote Ollama server, use an <strong>ollama/…</strong> model and set its base URL here.</p>
+          <p>For frontier providers, choose the corresponding model prefix and usually leave the endpoint blank.</p>
+          <p>Restarting the console is not required. New jobs read saved defaults immediately.</p>
+        </div>
+        <button id="save-settings" class="primary-button" type="submit"><span>Save persistent settings</span><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button>
+        <p id="settings-message" class="settings-message hidden" role="status"></p>
+      </aside>
+    </form>
+  </main>
+  <script src="/settings.js" defer></script>
+</body>
+</html>

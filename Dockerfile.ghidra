@@ -1,0 +1,73 @@
+# ==========================================================
+# Stage 1: Fetch Ghidra and CodeCut source
+# ==========================================================
+FROM alpine:latest AS fetcher
+RUN apk add --no-cache wget unzip git
+
+WORKDIR /tmp
+RUN wget -q --show-progress --progress=dot:giga \
+    https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_12.0.3_build/ghidra_12.0.3_PUBLIC_20260210.zip \
+    && unzip -q ghidra_12.0.3_PUBLIC_20260210.zip \
+    && mv ghidra_12.0.3_PUBLIC /opt/ghidra
+
+RUN git clone --depth 1 https://github.com/jhuapl/CodeCut.git /opt/codecut
+
+# ==========================================================
+# Stage 2: Build Python environment
+# ==========================================================
+FROM remnux/remnux-distro:noble AS pip-builder
+USER root
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-pip python3-venv python3-dev build-essential gfortran libopenblas-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m venv /opt/triage-env
+ENV PATH="/opt/triage-env/bin:$PATH"
+
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir \
+      scipy \
+      networkx \
+      nltk \
+      git+https://github.com/mrphrazer/ghidra-headless-mcp
+
+# ==========================================================
+# Stage 3: Final runtime image
+# ==========================================================
+FROM remnux/remnux-distro:noble
+USER root
+ENV DEBIAN_FRONTEND=noninteractive
+
+COPY --from=fetcher /opt/ghidra /opt/ghidra
+COPY --from=fetcher /opt/codecut /opt/codecut
+COPY --from=pip-builder /opt/triage-env /opt/triage-env
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-pip python3-venv python3-dev build-essential gfortran libopenblas-dev git \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PATH="/opt/triage-env/bin:$PATH"
+ENV GHIDRA_INSTALL_DIR="/opt/ghidra"
+ENV PYTHONPATH="/opt/codecut/src:/opt/ghidra/Ghidra/Features/Python/ghidra_scripts"
+
+RUN mkdir -p /opt/ghidra/headless_scripts \
+    /home/remnux/samples \
+    /home/remnux/projects
+
+COPY DisableWindowsResourceReferenceAnalyzer.java /opt/ghidra/headless_scripts/DisableWindowsResourceReferenceAnalyzer.java
+
+RUN chown -R remnux:remnux \
+    /home/remnux/samples \
+    /home/remnux/projects \
+    /opt/ghidra \
+    /opt/codecut \
+    /opt/triage-env
+
+USER remnux
+RUN python3 -m nltk.downloader -d /home/remnux/nltk_data punkt stopwords
+
+WORKDIR /home/remnux
+ENTRYPOINT ["ghidra-headless-mcp", "--ghidra-install-dir", "/opt/ghidra"]

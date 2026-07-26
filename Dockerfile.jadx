@@ -1,0 +1,25 @@
+# ==========================================================
+# Stage 1: Build the JADX MCP Server
+# ==========================================================
+FROM maven:3.9-eclipse-temurin-17 AS builder
+
+# Change this from /tmp to a dedicated build directory
+WORKDIR /src
+
+# Clone and build
+RUN git clone --depth 1 https://github.com/Qtty/jadx-mcp-server.git . \
+     && mvn clean package -DskipTests
+
+# ==========================================================
+# Stage 2: Lightweight JRE Runtime
+# ==========================================================
+FROM eclipse-temurin:17-jre-jammy
+WORKDIR /opt/jadx-mcp
+
+# Copy the compiled JAR from the builder stage
+COPY --from=builder /src/target/jadx-mcp-server-*.jar /opt/jadx-mcp/jadx-mcp-server.jar
+
+# Ensure workspace folders exist for the sandbox
+RUN mkdir -p /home/remnux/samples /home/remnux/projects
+
+ENTRYPOINT ["java", "-jar", "jadx-mcp-server.jar"]
