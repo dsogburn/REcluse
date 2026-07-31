@@ -30,11 +30,14 @@ REcluse accepts an archive or individual file, identifies its real format from c
 - **Multiple playbooks** — Ghidra, ILSpy, JADX, REMnux document tooling, and a non-executing script deobfuscator.
 - **Evidence-backed reports** — findings cite exact tool-call identifiers and retain rejection history and transcripts.
 - **Script recovery** — statically unwraps common Base64, DEFLATE/GZip, character-code, escape, and concatenation obfuscation without invoking an interpreter.
-- **Optional dynamic correlation** — submits Windows PE/.NET samples to CAPE, ANY.RUN, or Joe Sandbox and correlates runtime behavior with static evidence.
+- **Package-aware analysis** — prioritizes archive orchestrators, carries established context across members, safely decodes PEM-armored Base64 payloads, and analyzes decoded content with the correct route.
+- **Optional dynamic correlation** — submits Windows PE/.NET samples to CAPE, ANY.RUN, Joe Sandbox, or Recorded Future Triage and correlates runtime behavior with static evidence.
 - **Optional VirusTotal enrichment** — performs hash-first API v3 reputation lookup and can explicitly opt in to public upload for unknown samples.
+- **Hash-first online pivots** — optional abuse.ch, UnpacMe, and Recorded Future Triage integrations search hashes before any permitted upload.
 - **Local or remote models** — use Ollama on the analyst workstation, a remote inference server, or a supported hosted provider through LiteLLM.
-- **Analyst-friendly GUI** — drag-and-drop upload, parameter controls, queued jobs, live logs, persistent settings, and downloadable artifacts.
-- **CLI automation** — the same pipeline remains available for terminal and batch workflows.
+- **Persistent analyst GUI** — drag-and-drop upload, queued jobs, live logs, per-file verdicts, decoded-payload viewers, persistent settings, and report deletion.
+- **Searchable Report Archive** — filter persisted reports by filename, hash, date, model, and verdict; choose the number displayed and reopen complete analysis details.
+- **CLI and REST automation** — use the same pipeline from the terminal or through the localhost FastAPI interface.
 
 ## Analysis routes
 
@@ -50,9 +53,9 @@ REcluse accepts an archive or individual file, identifies its real format from c
 ### Optional Windows dynamic analysis
 
 REcluse can use a self-hosted [CAPE Sandbox](https://capev2.readthedocs.io/),
-ANY.RUN, or Joe Sandbox as a second analysis stage for Windows PE and .NET
-samples. CAPE runs the sample in a disposable Windows 10/11 virtual machine; it
-is not a Docker analyzer.
+ANY.RUN, Joe Sandbox, or Recorded Future Triage as a second analysis stage for
+Windows PE and .NET samples. CAPE runs the sample in a disposable Windows 10/11
+virtual machine; it is not a Docker analyzer.
 FLARE-VM may be installed in a separate analyst VM, but the automated detonation
 guest should follow CAPE's guest configuration and snapshot workflow.
 
@@ -66,12 +69,14 @@ in `config.json`:
   "dynamic_url": "http://127.0.0.1:8000",
   "dynamic_urls": {
     "cape": "http://127.0.0.1:8000",
-    "joesandbox": ""
+    "joesandbox": "",
+    "triage": "https://tria.ge/api/v0"
   },
   "dynamic_token": "",
   "dynamic_tokens": {
     "anyrun": "",
-    "joesandbox": ""
+    "joesandbox": "",
+    "triage": ""
   },
   "dynamic_timeout": 1800,
   "dynamic_poll_interval": 10,
@@ -136,6 +141,25 @@ bundle correlates the SHA-256 against MalwareBazaar, ThreatFox, and URLhaus.
 MalwareBazaar submission is intentionally not exposed: REcluse uses it only for
 hash lookup because submitted samples are community-facing and its upload API is
 intended for confirmed, fresh malware.
+
+## Multi-file archives and decoded payloads
+
+Archive members are not treated as unrelated jobs. REcluse analyzes likely
+orchestrating scripts first, retains their bounded findings as package context,
+and supplies those relationships to later member analyses. A package-level JSON
+artifact records member statuses even when one member completes with warnings.
+
+Files masquerading as certificates are handled conservatively. When a `.crt` or
+similarly named file is actually PEM-armored Base64 data, REcluse decodes it as
+an inert transformation, records the encoding and decoded SHA-256, saves the
+decoded output, and routes that output from its content. For example, decoded
+VBScript is sent to the static script analyzer and MSBuild XML is reviewed as
+scriptable XML—not sent to Ghidra as a native executable. Decoded content is
+never executed by this workflow.
+
+The resulting report includes exact manual decoding instructions and specific
+analyst pivots. In the WebGUI, decoded text opens in a safe viewer and retains a
+separate download action.
 
 Extensions are used only as a final hint. A PowerShell payload renamed to `.malz`, for example, is routed from its syntax rather than sent to a binary analyzer.
 
@@ -260,7 +284,12 @@ The interface provides:
 - Optional API-key override and report-root selection
 - Single-worker analysis queue to avoid competing for model/GPU resources
 - Live Conductor output
-- Persistent analysis history with downloadable reports, transcripts, and recovered scripts
+- Persistent analysis history restored after WebGUI or host restarts
+- Expandable per-file details with verdict badges and human-readable artifact tabs
+- Safe inline viewing and explicit download controls for decoded payloads
+- A searchable Report Archive with filename, hash, date, model, and verdict filters
+- Configurable archive display counts of 15, 25, 50, 100, or all matching reports
+- Navigation from an artifact back to the originating analysis details without losing archive filters
 - Guarded deletion of finished analyses and their generated artifacts
 - Persistent endpoint and default configuration
 
@@ -287,7 +316,7 @@ curl -sS -X POST http://127.0.0.1:8743/api/jobs \
 ```
 
 The submission returns HTTP `202` and a job object containing its `id`. Poll the
-job until `status` is `completed` or `failed`:
+job until `status` is `completed`, `completed_with_warnings`, or `failed`:
 
 ```bash
 curl -sS http://127.0.0.1:8743/api/jobs/JOB_ID
@@ -305,6 +334,26 @@ Optional multipart fields include `model`, `api_key`, `reports_dir`,
 `max_turns`, `max_tool_errors`, and `verbose`. Omitted fields use the persistent
 defaults configured in the GUI. The API intentionally binds to localhost by
 default and has no authentication; do not expose it to an untrusted network.
+
+Useful endpoints include:
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/api/health` | Check service readiness |
+| `GET` | `/api/config` | Read non-secret defaults and feature availability |
+| `GET` / `PUT` | `/api/settings` | Read or update settings; stored secrets are never returned |
+| `POST` | `/api/jobs` | Submit one sample or archive for analysis |
+| `GET` | `/api/jobs` | List persisted jobs |
+| `GET` | `/api/jobs/{job_id}` | Poll status, logs, parameters, and artifacts |
+| `DELETE` | `/api/jobs/{job_id}` | Delete a finished job and its managed artifacts |
+| `GET` | `/api/reports` | Search reports by filename, hash, date, model, and verdict |
+| `GET` | `/api/jobs/{job_id}/artifact-content/{path}` | Read a text or JSON artifact inline |
+| `GET` | `/api/jobs/{job_id}/artifacts/{path}` | Download an artifact |
+
+Provider selections and upload authorizations are also available as multipart
+fields. Consult `/api/docs` for the current schema. Public or community-facing
+sample uploads require the literal `upload_acknowledgement=acknowledge`; hash
+lookups do not.
 
 ## Command-line usage
 
@@ -375,14 +424,24 @@ For each analyzed member, REcluse can produce:
 <sample>.report.json
 <sample>.transcript.json
 <sample>.deobfuscated.txt   # when script obfuscation is recovered
-<sample>.dynamic.json       # full sandbox report when enabled and completed
+<sample>.decoded.<type>     # inert decoded content when a wrapper is recognized
+<sample>.dynamic.<provider>.json # sandbox report when enabled and completed
 <sample>.remnux.json        # full REMnux MCP tool-chain results
 <sample>.virustotal.json    # full VT API response when a report is available
+<sample>.abusech.json       # optional hash-correlation results
+<sample>.unpacme.json       # optional unpacking-service results
+<archive>.package.json      # package status and shared member context
 ```
 
 Reports include sample hashes, detected file type, identification method, selected route, completion status, model, tool evidence, validation failures, quality scoring, verdict, capabilities, IOCs, and exact evidence references.
 
 Submitted samples and generated reports are excluded by `.gitignore`. Keep those artifacts in an access-controlled case-management location rather than source control.
+
+The ignored `Resources/` directory is available for disposable analyst test
+scripts and sample material. Automated `test_*.py` regression tests remain
+tracked because they are project source. `config.json`, `.env` files, report
+directories, uploads, decoded outputs, and WebGUI job manifests are also
+ignored to reduce the risk of committing credentials or case evidence.
 
 ## Safety model
 
@@ -404,6 +463,10 @@ For remote model use, remember that tool output and recovered source may be sent
 conductor.py              Orchestration, routing, validation, and reporting
 webapp.py                 Local FastAPI analyst console
 web/                      Browser interface and REcluse branding
+cape_client.py            CAPE API client and report normalization
+sandbox_client.py         Dynamic sandbox provider abstraction
+virustotal_client.py      VirusTotal lookup and optional upload client
+online_enrichment.py      abuse.ch and UnpacMe integrations
 maldoc_mcp_server.py      Static malicious-document tools
 script_mcp_server.py      Non-executing script deobfuscation tools
 Dockerfile.ghidra         Native reverse-engineering image
@@ -414,7 +477,10 @@ Dockerfile.script         Static script-analysis image
 recluse                   CLI launcher
 run-web                   Web launcher
 setup.sh                  Host bootstrap
+recluse-web.service.in    Localhost systemd service template
 config.json.template      Safe configuration example
+Resources/                Ignored analyst test scripts and samples
+test_*.py                 Tracked regression tests
 ```
 
 ## Responsible use
