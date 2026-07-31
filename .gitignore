@@ -1,19 +1,41 @@
 # Secrets and Credentials
 config.json
+config.local.json
+config.*.local.json
 .env
 .env.*
+!.env.example
 
 # Python Virtual Environment
 venv/
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+node_modules/
 
 # Analyst Inputs and Generated Evidence
 samples/
 reports/
 uploads/
+Resources/
+**/reports/
+**/uploads/
 *.malz
+*.report.json
+*.transcript.json
+*.remnux.json
+*.dynamic.json
+*.dynamic.*.json
+*.virustotal.json
+*.abusech.json
+*.unpacme.json
+*.deobfuscated.txt
+*.decoded.*
+.recluse-job.json
+.recluse-web-jobs.json
 
 # Benchmark and Local Evaluation Output
 benchmark_reports/

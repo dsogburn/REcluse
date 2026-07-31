@@ -30,6 +30,8 @@
     </a>
     <div class="top-actions">
       <div class="system-state"><span class="pulse"></span> Analysis environment</div>
+      <a class="settings-link" href="/reports.html" aria-label="Browse reports"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6V3Z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg><span>Reports</span></a>
+      <a class="settings-link" href="/help.html" aria-label="Open help"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.3 2.3 0 1 1 3.4 2c-.8.5-1.2 1-1.2 2M12 17h.01"/></svg><span>Help</span></a>
       <a class="settings-link" href="/settings.html" aria-label="Open settings">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.57 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.2 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H2.4v-4h.09A1.7 1.7 0 0 0 4.2 8.57a1.7 1.7 0 0 0-.34-1.88l-.06-.06L6.63 3.8l.06.06A1.7 1.7 0 0 0 8.57 4.2a1.7 1.7 0 0 0 1-.6A1.7 1.7 0 0 0 10 2.5v-.1h4v.09a1.7 1.7 0 0 0 1 1.71 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 8.6a1.7 1.7 0 0 0 .6 1 1.7 1.7 0 0 0 1.1.4h.1v4h-.09a1.7 1.7 0 0 0-1.71 1Z"/></svg>
         <span>Settings</span>
@@ -62,7 +64,7 @@
         </div>
 
         <label id="drop-zone" class="drop-zone" for="sample-input">
-          <input id="sample-input" name="sample" type="file" required>
+          <input id="sample-input" name="sample" type="file">
           <span class="upload-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M5 14v5h14v-5"/></svg>
           </span>
@@ -112,6 +114,57 @@
             <span>API key override</span>
             <input id="api-key" name="api_key" type="password" autocomplete="off" placeholder="Leave blank for configured provider">
           </label>
+          <div class="integration-options field-wide">
+            <span class="integration-title">Optional enrichment</span>
+            <label class="check-field integration-option" id="option-cape">
+              <input id="use-cape" type="checkbox" value="cape"><span class="check-box"></span>
+              <span><strong>CAPE</strong><small>Self-hosted dynamic analysis</small></span>
+            </label>
+            <label class="check-field integration-option" id="option-anyrun">
+              <input id="use-anyrun" type="checkbox" value="anyrun"><span class="check-box"></span>
+              <span><strong>ANY.RUN</strong><small>Configure an API key in Settings</small></span>
+            </label>
+            <label class="check-field integration-upload" id="option-anyrun-upload">
+              <input id="upload-anyrun" type="checkbox"><span class="check-box"></span>
+              <span><strong>Upload sample</strong><small>Explicit public-service submission</small></span>
+            </label>
+            <label class="check-field integration-option" id="option-joesandbox">
+              <input id="use-joesandbox" type="checkbox" value="joesandbox"><span class="check-box"></span>
+              <span><strong>Joe Sandbox</strong><small>Configure an API key in Settings</small></span>
+            </label>
+            <label class="check-field integration-upload" id="option-joesandbox-upload">
+              <input id="upload-joesandbox" type="checkbox"><span class="check-box"></span>
+              <span><strong>Upload sample</strong><small>Explicit hosted-service submission</small></span>
+            </label>
+            <label class="check-field integration-option" id="option-triage">
+              <input id="use-triage" type="checkbox" value="triage"><span class="check-box"></span>
+              <span><strong>Recorded Future Triage</strong><small>Search by SHA-256 first</small></span>
+            </label>
+            <label class="check-field integration-upload" id="option-triage-upload">
+              <input id="upload-triage" type="checkbox"><span class="check-box"></span>
+              <span><strong>Upload if unknown</strong><small>Requires explicit submission consent</small></span>
+            </label>
+            <label class="check-field integration-option" id="option-virustotal">
+              <input id="use-virustotal" type="checkbox"><span class="check-box"></span>
+              <span><strong>VirusTotal</strong><small>Configure an API key in Settings</small></span>
+            </label>
+            <label class="check-field integration-upload" id="option-virustotal-upload">
+              <input id="upload-virustotal" type="checkbox"><span class="check-box"></span>
+              <span><strong>Upload if unknown</strong><small>May be shared with partners and community</small></span>
+            </label>
+            <label class="check-field integration-option" id="option-abusech">
+              <input id="use-abusech" type="checkbox"><span class="check-box"></span>
+              <span><strong>abuse.ch</strong><small>Hash-only MalwareBazaar, ThreatFox, and URLhaus lookup</small></span>
+            </label>
+            <label class="check-field integration-option" id="option-unpacme">
+              <input id="use-unpacme" type="checkbox"><span class="check-box"></span>
+              <span><strong>UnpacMe</strong><small>Private unpacking when supported by your plan</small></span>
+            </label>
+            <label class="check-field integration-upload" id="option-unpacme-upload">
+              <input id="upload-unpacme" type="checkbox"><span class="check-box"></span>
+              <span><strong>Upload sample</strong><small>Explicit per-analysis submission</small></span>
+            </label>
+          </div>
           <label class="check-field">
             <input id="verbose" name="verbose" type="checkbox">
             <span class="check-box"></span>
@@ -137,6 +190,7 @@
           <p>Your submitted jobs and generated artifacts will appear here.</p>
         </div>
         <div id="jobs-list" class="jobs-list"></div>
+        <a class="activity-footer" href="/reports.html">Browse all reports →</a>
       </aside>
     </section>
   </main>
@@ -154,8 +208,20 @@
         <div class="log-heading"><h3>Live execution log</h3><span id="log-lines"></span></div>
         <pre id="job-log">Waiting for output…</pre>
       </div>
+      <button id="delete-job" class="danger-button hidden" type="button">Delete analysis and artifacts</button>
     </section>
   </div>
+
+  <dialog id="upload-warning" class="upload-warning">
+    <form method="dialog">
+      <p class="eyebrow">EXTERNAL SAMPLE DISCLOSURE</p>
+      <h2>Confirm sample upload</h2>
+      <p id="upload-warning-copy"></p>
+      <p>A novel sample may expose an investigation, alert an adversary, or become accessible to the provider, its partners, or the security community. Verify your authorization and the provider's current sharing policy.</p>
+      <label class="field"><span>Type <strong>acknowledge</strong> to continue</span><input id="upload-ack-input" type="text" autocomplete="off" spellcheck="false"></label>
+      <div class="warning-actions"><button id="cancel-upload" value="cancel" type="submit">Cancel</button><button id="confirm-upload" value="confirm" type="submit" disabled>Authorize upload</button></div>
+    </form>
+  </dialog>
 
   <script src="/app.js" defer></script>
 </body>

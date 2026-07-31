@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Report — REcluse</title>
+  <link rel="icon" href="/recluse-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand-mark"><img src="/recluse-mark.svg" alt=""></span>
+      <span><strong><em>RE</em>cluse</strong><small>Analyst Console</small></span>
+    </a>
+    <div class="top-actions">
+      <a class="settings-link" href="/">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+        <span>Back to analyses</span>
+      </a>
+      <a id="report-download" class="report-download hidden" href="#" download>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
+        Download report
+      </a>
+    </div>
+  </header>
+
+  <main class="report-shell">
+    <a id="report-back" class="report-back" href="/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+      <span>Analysis details</span>
+    </a>
+    <section class="report-heading">
+      <div>
+        <p class="eyebrow">ANALYSIS ARTIFACT</p>
+        <h1 id="report-title">Loading report…</h1>
+        <p id="report-subtitle">Reading the local analysis artifact.</p>
+      </div>
+      <div id="report-verdict" class="verdict-card hidden">
+        <span>Verdict</span>
+        <strong></strong>
+        <small></small>
+      </div>
+    </section>
+
+    <p id="report-error" class="report-error hidden" role="alert"></p>
+
+    <section id="report-overview" class="report-grid hidden">
+      <article class="report-card report-summary">
+        <p class="eyebrow">ASSESSMENT</p>
+        <h2>Summary</h2>
+        <p id="report-summary"></p>
+      </article>
+      <article class="report-card">
+        <p class="eyebrow">ANALYSIS</p>
+        <h2>Run details</h2>
+        <dl id="report-metadata" class="report-metadata"></dl>
+      </article>
+      <article class="report-card">
+        <p class="eyebrow">OBSERVED</p>
+        <h2>Capabilities</h2>
+        <div id="report-capabilities" class="report-tags"></div>
+      </article>
+      <article class="report-card">
+        <p class="eyebrow">INDICATORS</p>
+        <h2>IOCs</h2>
+        <div id="report-iocs" class="report-iocs"></div>
+      </article>
+      <article class="report-card report-wide">
+        <p class="eyebrow">EVIDENCE TRAIL</p>
+        <h2>Cited evidence</h2>
+        <div id="report-evidence" class="report-evidence"></div>
+      </article>
+      <article class="report-card report-wide">
+        <p class="eyebrow">REMNUX MCP</p>
+        <h2>Automated tool-chain results</h2>
+        <div id="report-remnux" class="report-evidence"></div>
+      </article>
+      <article class="report-card report-wide">
+        <p class="eyebrow">ANALYST PIVOTS</p>
+        <h2>Priority locations</h2>
+        <div id="report-pivots" class="report-evidence"></div>
+      </article>
+      <article class="report-card report-wide">
+        <p class="eyebrow">PE STRUCTURE</p>
+        <h2>Sections and entropy</h2>
+        <div class="report-table-wrap">
+          <table class="report-table">
+            <thead><tr><th>Section</th><th>RVA</th><th>VA</th><th>Raw offset</th><th>Entropy</th><th>Flags</th></tr></thead>
+            <tbody id="report-sections"></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="report-card report-wide">
+        <p class="eyebrow">BINARY CONTEXT</p>
+        <h2>Metadata, notable imports, and resources</h2>
+        <div id="report-binary-context" class="report-evidence"></div>
+      </article>
+      <article class="report-card report-wide">
+        <p class="eyebrow">SIGNATURE DETAIL</p>
+        <h2>YARA matches and anomalies</h2>
+        <div id="report-signatures" class="report-evidence"></div>
+      </article>
+      <article class="report-card report-wide">
+        <p class="eyebrow">FLOSS</p>
+        <h2>Ranked interesting strings</h2>
+        <div id="report-floss" class="report-evidence"></div>
+      </article>
+      <article class="report-card report-wide">
+        <p class="eyebrow">CAPA</p>
+        <h2>Identified capabilities</h2>
+        <div id="report-capa" class="report-evidence"></div>
+      </article>
+      <article class="report-card report-wide">
+        <p class="eyebrow">HANDOFF</p>
+        <h2>Recommended next steps</h2>
+        <ol id="report-next-steps" class="report-next-steps"></ol>
+      </article>
+    </section>
+
+    <section class="raw-report">
+      <button id="raw-toggle" class="raw-toggle" type="button" aria-expanded="false">
+        <span>Raw artifact</span><small>Show JSON</small>
+      </button>
+      <pre id="raw-content" class="hidden"></pre>
+    </section>
+  </main>
+
+  <script src="/report.js" defer></script>
+</body>
+</html>

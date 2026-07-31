@@ -15,10 +15,11 @@
       <span class="brand-mark"><img src="/recluse-mark.svg" alt=""></span>
       <span><strong><em>RE</em>cluse</strong><small>Analyst Console</small></span>
     </a>
-    <a class="settings-link" href="/">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
-      <span>Back to analysis</span>
-    </a>
+    <div class="top-actions">
+      <a class="settings-link" href="/reports.html" aria-label="Browse reports"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6V3Z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg><span>Reports</span></a>
+      <a class="settings-link" href="/help.html" aria-label="Open help"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.3 2.3 0 1 1 3.4 2c-.8.5-1.2 1-1.2 2M12 17h.01"/></svg><span>Help</span></a>
+      <a class="settings-link" href="/" aria-label="File Analysis"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><span>File Analysis</span></a>
+    </div>
   </header>
 
   <main class="settings-shell">
@@ -81,10 +82,125 @@
               <span>Tool-error limit</span>
               <input id="settings-errors" type="number" min="1" max="100" required>
             </label>
+            <label class="check-field compact field-wide">
+              <input id="settings-remnux-enabled" type="checkbox">
+              <span class="check-box"></span>
+              <span><strong>Enable broad REMnux analysis</strong><small>Run the official MCP tool chain in a fresh offline container for every sample</small></span>
+            </label>
+            <label class="field">
+              <span>REMnux depth</span>
+              <select id="settings-remnux-depth">
+                <option value="quick">Quick</option>
+                <option value="standard">Standard</option>
+                <option value="deep">Deep</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>REMnux per-tool timeout</span>
+              <input id="settings-remnux-timeout" type="number" min="30" max="3600" required>
+              <small>Seconds allowed for each underlying analysis command.</small>
+            </label>
             <label class="check-field compact">
               <input id="settings-verbose" type="checkbox">
               <span class="check-box"></span>
               <span><strong>Verbose diagnostics</strong><small>Default to full runtime tracebacks</small></span>
+            </label>
+          </div>
+        </section>
+
+        <section class="settings-card">
+          <div class="settings-card-heading">
+            <span class="settings-icon">◉</span>
+            <div><h2>Dynamic analysis</h2><p>Optionally detonate Windows PE and .NET samples in CAPE or a hosted sandbox.</p></div>
+          </div>
+          <div class="settings-fields two-column">
+            <div class="provider-card field-wide">
+              <label class="check-field compact"><input id="settings-provider-cape" type="checkbox"><span class="check-box"></span><span><strong>CAPE by default</strong><small>Self-hosted or private CAPE instance</small></span></label>
+              <label class="field"><span>CAPE endpoint</span><input id="settings-cape-url" type="url" placeholder="http://127.0.0.1:8000"></label>
+              <label class="field"><span>Optional CAPE token</span><div class="secret-input"><input id="settings-cape-token" type="password" autocomplete="new-password"><span id="cape-key-state"></span></div></label>
+              <label id="clear-cape-key-row" class="check-field compact hidden"><input id="clear-cape-token" type="checkbox"><span class="check-box"></span><span><strong>Remove CAPE token</strong></span></label>
+            </div>
+            <div class="provider-card field-wide">
+              <label class="check-field compact"><input id="settings-provider-anyrun" type="checkbox"><span class="check-box"></span><span><strong>ANY.RUN by default</strong><small>Commercial hosted sandbox</small></span></label>
+              <label class="field"><span>ANY.RUN API key</span><div class="secret-input"><input id="settings-anyrun-key" type="password" autocomplete="new-password"><span id="anyrun-key-state"></span></div></label>
+              <label id="clear-anyrun-key-row" class="check-field compact hidden"><input id="clear-anyrun-key" type="checkbox"><span class="check-box"></span><span><strong>Remove ANY.RUN key</strong></span></label>
+            </div>
+            <div class="provider-card field-wide">
+              <label class="check-field compact"><input id="settings-provider-joesandbox" type="checkbox"><span class="check-box"></span><span><strong>Joe Sandbox by default</strong><small>Commercial cloud or custom/on-premise endpoint</small></span></label>
+              <label class="field"><span>Joe Sandbox endpoint</span><input id="settings-joe-url" type="url" placeholder="Leave blank for Joe Cloud"></label>
+              <label class="field"><span>Joe Sandbox API key</span><div class="secret-input"><input id="settings-joe-key" type="password" autocomplete="new-password"><span id="joe-key-state"></span></div></label>
+              <label id="clear-joe-key-row" class="check-field compact hidden"><input id="clear-joe-key" type="checkbox"><span class="check-box"></span><span><strong>Remove Joe Sandbox key</strong></span></label>
+            </div>
+            <div class="provider-card field-wide">
+              <label class="check-field compact"><input id="settings-provider-triage" type="checkbox"><span class="check-box"></span><span><strong>Recorded Future Triage by default</strong><small>Hash-first lookup; optional public or private-cloud submission per job</small></span></label>
+              <label class="field"><span>Triage API endpoint</span><input id="settings-triage-url" type="url" placeholder="https://tria.ge/api/v0"></label>
+              <label class="field"><span>Triage API key</span><div class="secret-input"><input id="settings-triage-key" type="password" autocomplete="new-password"><span id="triage-key-state"></span></div></label>
+              <label id="clear-triage-key-row" class="check-field compact hidden"><input id="clear-triage-key" type="checkbox"><span class="check-box"></span><span><strong>Remove Triage key</strong></span></label>
+            </div>
+            <label class="field">
+              <span>Timeout (seconds)</span>
+              <input id="settings-dynamic-timeout" type="number" min="30" max="86400">
+            </label>
+            <label class="field">
+              <span>Poll interval (seconds)</span>
+              <input id="settings-dynamic-poll" type="number" min="1" max="300">
+            </label>
+            <label class="field">
+              <span>Machine name</span>
+              <input id="settings-dynamic-machine" type="text" placeholder="CAPE default">
+            </label>
+            <label class="field">
+              <span>Analysis package</span>
+              <input id="settings-dynamic-package" type="text" placeholder="CAPE auto-select">
+            </label>
+          </div>
+        </section>
+
+        <section class="settings-card">
+          <div class="settings-card-heading">
+            <span class="settings-icon">◎</span>
+            <div><h2>Online intelligence and unpacking</h2><p>Hash-only abuse.ch correlation and optional private UnpacMe processing.</p></div>
+          </div>
+          <div class="settings-fields two-column">
+            <label class="check-field compact field-wide"><input id="settings-abusech-enabled" type="checkbox"><span class="check-box"></span><span><strong>Enable abuse.ch enrichment by default</strong><small>Queries MalwareBazaar, ThreatFox, and URLhaus using the sample hash</small></span></label>
+            <label class="field field-wide"><span>abuse.ch Auth-Key</span><div class="secret-input"><input id="settings-abusech-key" type="password" autocomplete="new-password"><span id="abusech-key-state"></span></div></label>
+            <label id="clear-abusech-key-row" class="check-field compact field-wide hidden"><input id="clear-abusech-key" type="checkbox"><span class="check-box"></span><span><strong>Remove abuse.ch key</strong></span></label>
+            <label class="check-field compact field-wide"><input id="settings-unpacme-enabled" type="checkbox"><span class="check-box"></span><span><strong>Offer UnpacMe by default</strong><small>Actual upload must still be selected for each job</small></span></label>
+            <label class="field field-wide"><span>UnpacMe API key</span><div class="secret-input"><input id="settings-unpacme-key" type="password" autocomplete="new-password"><span id="unpacme-key-state"></span></div></label>
+            <label id="clear-unpacme-key-row" class="check-field compact field-wide hidden"><input id="clear-unpacme-key" type="checkbox"><span class="check-box"></span><span><strong>Remove UnpacMe key</strong></span></label>
+            <label class="check-field compact field-wide"><input id="settings-unpacme-private" type="checkbox"><span class="check-box"></span><span><strong>Request private UnpacMe submission</strong><small>Requires a plan that supports private submissions</small></span></label>
+            <label class="field"><span>UnpacMe timeout</span><input id="settings-unpacme-timeout" type="number" min="30" max="86400"></label>
+            <label class="field"><span>Poll interval</span><input id="settings-unpacme-poll" type="number" min="1" max="300"></label>
+          </div>
+        </section>
+
+        <section class="settings-card">
+          <div class="settings-card-heading">
+            <span class="settings-icon">VT</span>
+            <div><h2>VirusTotal enrichment</h2><p>Optionally add file reputation and multi-engine detection context using the VirusTotal API v3.</p></div>
+          </div>
+          <div class="settings-fields two-column">
+            <label class="check-field compact field-wide">
+              <input id="settings-virustotal-enabled" type="checkbox">
+              <span class="check-box"></span>
+              <span><strong>Enable VirusTotal lookup</strong><small>Queries the SHA-256 first; sample bytes are not sent during a hash lookup</small></span>
+            </label>
+            <label class="field field-wide">
+              <span>VirusTotal API key</span>
+              <div class="secret-input"><input id="settings-virustotal-api-key" type="password" autocomplete="new-password" placeholder="Enter a new VirusTotal API key"><span id="virustotal-key-state"></span></div>
+            </label>
+            <label id="clear-virustotal-key-row" class="check-field compact field-wide hidden">
+              <input id="clear-virustotal-api-key" type="checkbox">
+              <span class="check-box"></span>
+              <span><strong>Remove stored VirusTotal API key</strong></span>
+            </label>
+            <label class="field">
+              <span>Analysis timeout (seconds)</span>
+              <input id="settings-virustotal-timeout" type="number" min="30" max="86400">
+            </label>
+            <label class="field">
+              <span>Poll interval (seconds)</span>
+              <input id="settings-virustotal-poll" type="number" min="1" max="300">
             </label>
           </div>
         </section>

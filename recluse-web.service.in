@@ -1,0 +1,21 @@
+[Unit]
+Description=REcluse malware triage WebGUI and API
+Wants=network-online.target
+After=network-online.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=@RECLUSE_USER@
+SupplementaryGroups=docker
+WorkingDirectory=@RECLUSE_DIR@
+Environment=RECLUSE_WEB_PORT=8743
+ExecStart=@RECLUSE_DIR@/run-web
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=30s
+UMask=0077
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="REcluse analyst console and API help">
+  <title>Help — REcluse</title>
+  <link rel="icon" href="/recluse-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="brand-mark"><img src="/recluse-mark.svg" alt=""></span><span><strong><em>RE</em>cluse</strong><small>Analyst Console</small></span></a>
+    <div class="top-actions"><a class="settings-link" href="/reports.html" aria-label="Browse reports"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6V3Z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg><span>Reports</span></a><a class="settings-link" href="/settings.html" aria-label="Open settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.57 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.2 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H2.4v-4h.09A1.7 1.7 0 0 0 4.2 8.57a1.7 1.7 0 0 0-.34-1.88l-.06-.06L6.63 3.8l.06.06A1.7 1.7 0 0 0 8.57 4.2a1.7 1.7 0 0 0 1-.6A1.7 1.7 0 0 0 10 2.5v-.1h4v.09a1.7 1.7 0 0 0 1 1.71 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 8.6a1.7 1.7 0 0 0 .6 1 1.7 1.7 0 0 0 1.1.4h.1v4h-.09a1.7 1.7 0 0 0-1.71 1Z"/></svg><span>Settings</span></a><a class="settings-link" href="/" aria-label="File Analysis"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><span>File Analysis</span></a></div>
+  </header>
+
+  <main class="help-shell">
+    <section class="help-intro">
+      <p class="eyebrow">OPERATOR REFERENCE</p>
+      <h1>Using REcluse safely</h1>
+      <p>Guidance for submitting samples, interpreting evidence, configuring enrichment, managing reports, and automating analysis through the local API.</p>
+    </section>
+
+    <div class="help-layout">
+      <nav class="help-toc" aria-label="Help topics">
+        <strong>On this page</strong>
+        <a href="#quick-start">Quick start</a><a href="#advanced">Advanced options</a><a href="#uploads">External uploads</a><a href="#reports">Reports</a><a href="#api">FastAPI</a><a href="#troubleshooting">Troubleshooting</a>
+      </nav>
+
+      <div class="help-content">
+        <section id="quick-start" class="help-card">
+          <p class="eyebrow">01 · ANALYSIS</p><h2>Quick start</h2>
+          <ol><li>Drop one suspicious file into the submission area or browse for it.</li><li>Confirm the model and archive password. Common malware archives use <code>infected</code>.</li><li>Open Advanced options only when you need enrichment or different limits.</li><li>Select <strong>Begin isolated analysis</strong>, then open the job in Recent activity to follow its log and artifacts.</li></ol>
+          <div class="help-note"><strong>Accepted input</strong><span>Archives, PE and .NET binaries, documents, PDFs, APKs, and scripts. The content classifier does not rely solely on the filename extension.</span></div>
+        </section>
+
+        <section id="advanced" class="help-card">
+          <p class="eyebrow">02 · CONTROLS</p><h2>Advanced options</h2>
+          <dl class="help-definitions">
+            <div><dt>Tool-error limit</dt><dd>Stops an unproductive model/tool loop after repeated invalid or failed tool calls.</dd></div>
+            <div><dt>Reports directory</dt><dd>Root directory for the job's persistent report folder. Completed jobs are rediscovered after an application restart.</dd></div>
+            <div><dt>CAPE</dt><dd>Runs a locally hosted dynamic sandbox. No public-upload acknowledgement is needed.</dd></div>
+            <div><dt>Triage and VirusTotal</dt><dd>Search by SHA-256 first. The sample is uploaded only when the secondary upload option is selected and the hash has no usable result.</dd></div>
+            <div><dt>ANY.RUN and Joe Sandbox</dt><dd>Hosted dynamic services. Selecting upload is required before sample bytes are submitted.</dd></div>
+            <div><dt>abuse.ch</dt><dd>Performs hash-only correlation with MalwareBazaar, ThreatFox, and URLhaus. REcluse does not submit files to MalwareBazaar.</dd></div>
+            <div><dt>UnpacMe</dt><dd>Uploads only with explicit per-job permission and requests private processing when enabled in Settings and supported by the account.</dd></div>
+          </dl>
+        </section>
+
+        <section id="uploads" class="help-card warning-card">
+          <p class="eyebrow">03 · DISCLOSURE</p><h2>External sample uploads</h2>
+          <p>Hash searches should be the first pivot. A hash request does not transmit the sample contents, but it can still disclose investigative interest in that hash to the service.</p>
+          <p>For a public or community-facing upload, REcluse presents a warning and requires the exact word <code>acknowledge</code>. The API enforces the same rule server-side. Authorization applies only to that submitted job and is not saved as a default.</p>
+          <ul><li>Check your organization's handling rules and the provider's current retention and sharing terms.</li><li>Assume a novel sample can identify a victim, campaign, or private investigation.</li><li>Use a private tenant or local CAPE instance when disclosure is unacceptable.</li></ul>
+        </section>
+
+        <section id="reports" class="help-card">
+          <p class="eyebrow">04 · EVIDENCE</p><h2>Reports and artifacts</h2>
+          <p>Reports retain the verdict, evidence references, indicators, analyst pivots, tool transcript, and optional enrichment artifacts. Provider detections are reputation evidence—not proof that behavior was observed during execution.</p>
+          <p>Jobs remain visible after restarting the WebGUI. Use <strong>Delete analysis and artifacts</strong> in the job drawer to remove a finished job and its managed report directory. Deletion cannot be undone.</p>
+        </section>
+
+        <section id="api" class="help-card api-help">
+          <p class="eyebrow">05 · AUTOMATION</p><h2>FastAPI integration</h2>
+          <p>The WebGUI and REST API use the same job runner and persisted reports. Interactive OpenAPI documentation is available at <a href="/api/docs">/api/docs</a>; the machine-readable schema is at <a href="/api/openapi.json">/api/openapi.json</a>.</p>
+          <table class="help-table"><thead><tr><th>Method</th><th>Path</th><th>Purpose</th></tr></thead><tbody>
+            <tr><td><code>GET</code></td><td><code>/api/health</code></td><td>Check service readiness.</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/jobs</code></td><td>Submit one multipart sample and create a job.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/jobs</code></td><td>List current and restored jobs.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/reports</code></td><td>Search persisted reports by filename, hash, date, model, or verdict.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/jobs/{job_id}</code></td><td>Poll status, log output, and artifact metadata.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/jobs/{job_id}/artifact-content/{path}</code></td><td>Read a text or JSON artifact.</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/jobs/{job_id}/artifacts/{path}</code></td><td>Download an artifact.</td></tr>
+            <tr><td><code>DELETE</code></td><td><code>/api/jobs/{job_id}</code></td><td>Delete a finished job and its managed artifacts.</td></tr>
+          </tbody></table>
+
+          <h3>Common submission fields</h3>
+          <table class="help-table"><thead><tr><th>Field</th><th>Meaning</th></tr></thead><tbody>
+            <tr><td><code>sample</code></td><td>Required multipart file. Maximum size is 2 GiB.</td></tr>
+            <tr><td><code>password</code>, <code>model</code></td><td>Optional overrides; omitted values use Settings.</td></tr>
+            <tr><td><code>max_turns</code>, <code>max_tool_errors</code></td><td>Positive analysis limits.</td></tr>
+            <tr><td><code>dynamic_providers</code></td><td>Comma-separated selection: <code>cape,anyrun,joesandbox,triage</code>.</td></tr>
+            <tr><td><code>dynamic_upload_providers</code></td><td>Comma-separated providers explicitly authorized to receive file bytes.</td></tr>
+            <tr><td><code>virustotal_enabled</code>, <code>abusech_enabled</code>, <code>unpacme_enabled</code></td><td>Enable the corresponding optional enrichment for this job.</td></tr>
+            <tr><td><code>virustotal_upload_missing</code>, <code>unpacme_upload</code></td><td>Separate opt-in to file submission; both default to false.</td></tr>
+            <tr><td><code>upload_acknowledgement</code></td><td>Must equal <code>acknowledge</code> when public sample upload is requested.</td></tr>
+          </tbody></table>
+          <p>A successful submission returns HTTP <code>202</code> with the job object. Poll until <code>status</code> becomes <code>completed</code> or <code>failed</code>; intermediate states are <code>queued</code> and <code>running</code>. Treat artifact paths returned by the job as opaque values and URL-encode them when constructing retrieval requests.</p>
+
+          <h3>Submit a local, static-first job</h3>
+          <pre><code>curl -sS -X POST http://127.0.0.1:8743/api/jobs \
+  -F 'sample=@/path/to/sample.zip' \
+  -F 'password=infected' \
+  -F 'virustotal_enabled=true' \
+  -F 'virustotal_upload_missing=false'</code></pre>
+          <p>This enables VirusTotal hash lookup but explicitly leaves file upload disabled.</p>
+
+          <h3>Poll the job and retrieve an artifact</h3>
+          <pre><code>curl -sS http://127.0.0.1:8743/api/jobs/JOB_ID
+
+curl -sS \
+  http://127.0.0.1:8743/api/jobs/JOB_ID/artifact-content/ARTIFACT_PATH</code></pre>
+
+          <h3>Explicitly authorize a public upload</h3>
+          <pre><code>curl -sS -X POST http://127.0.0.1:8743/api/jobs \
+  -F 'sample=@/path/to/sample.exe' \
+  -F 'virustotal_enabled=true' \
+  -F 'virustotal_upload_missing=true' \
+  -F 'upload_acknowledgement=acknowledge'</code></pre>
+          <div class="help-note"><strong>API safety</strong><span>Do not add the acknowledgement field mechanically to every request. Include it only after a human or an authorized upstream policy has approved that specific external upload. Bind the service to trusted interfaces and place authentication in front of it before allowing remote access.</span></div>
+        </section>
+
+        <section id="troubleshooting" class="help-card">
+          <p class="eyebrow">06 · RECOVERY</p><h2>Troubleshooting</h2>
+          <dl class="help-definitions">
+            <div><dt>Option is greyed out</dt><dd>Add the provider endpoint or API key in Settings, save, and reload the analysis page.</dd></div>
+            <div><dt>Job fails immediately</dt><dd>Open the job drawer and inspect the first error in the execution log. Verify the model identifier, endpoint, credentials, and Docker availability.</dd></div>
+            <div><dt>No hosted report found</dt><dd>A hash-first provider may return “not found” when upload was not authorized. This is expected and does not send sample bytes.</dd></div>
+            <div><dt>Previous report is missing</dt><dd>Confirm the configured Reports directory still contains its <code>web-*</code> job folder and that the application can read it.</dd></div>
+          </dl>
+        </section>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

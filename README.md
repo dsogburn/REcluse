@@ -30,6 +30,8 @@ REcluse accepts an archive or individual file, identifies its real format from c
 - **Multiple playbooks** — Ghidra, ILSpy, JADX, REMnux document tooling, and a non-executing script deobfuscator.
 - **Evidence-backed reports** — findings cite exact tool-call identifiers and retain rejection history and transcripts.
 - **Script recovery** — statically unwraps common Base64, DEFLATE/GZip, character-code, escape, and concatenation obfuscation without invoking an interpreter.
+- **Optional dynamic correlation** — submits Windows PE/.NET samples to CAPE, ANY.RUN, or Joe Sandbox and correlates runtime behavior with static evidence.
+- **Optional VirusTotal enrichment** — performs hash-first API v3 reputation lookup and can explicitly opt in to public upload for unknown samples.
 - **Local or remote models** — use Ollama on the analyst workstation, a remote inference server, or a supported hosted provider through LiteLLM.
 - **Analyst-friendly GUI** — drag-and-drop upload, parameter controls, queued jobs, live logs, persistent settings, and downloadable artifacts.
 - **CLI automation** — the same pipeline remains available for terminal and batch workflows.
@@ -39,10 +41,101 @@ REcluse accepts an archive or individual file, identifies its real format from c
 | Detected content | Analyzer | Representative capabilities |
 |---|---|---|
 | Native PE / ELF | Ghidra MCP | Imports, exports, strings, symbols, functions, callers, callees, decompilation |
+| All supported file types | REMnux MCP | Deep file-aware tool chains, metadata, IOCs, strings, capabilities, signatures, unpacking hints, and analyst guidance |
 | .NET assembly | ILSpy MCP | Managed assembly inspection and decompilation |
 | Android APK / DEX | JADX MCP | Package, manifest, resource, and code inspection |
 | Office / PDF / RTF | REMnux maldoc MCP | `olevba`, `oleid`, `oleobj`, `pdfid.py`, `pdf-parser.py`, `rtfobj`, metadata |
 | PowerShell, JS, VBS, HTA, batch, shell, Python, and related scripts | Static script MCP | Bounded deobfuscation, recovered source, method log, capability analysis |
+
+### Optional Windows dynamic analysis
+
+REcluse can use a self-hosted [CAPE Sandbox](https://capev2.readthedocs.io/),
+ANY.RUN, or Joe Sandbox as a second analysis stage for Windows PE and .NET
+samples. CAPE runs the sample in a disposable Windows 10/11 virtual machine; it
+is not a Docker analyzer.
+FLARE-VM may be installed in a separate analyst VM, but the automated detonation
+guest should follow CAPE's guest configuration and snapshot workflow.
+
+Dynamic analysis is disabled by default. Configure it in the Settings page or
+in `config.json`:
+
+```json
+{
+  "dynamic_enabled": true,
+  "dynamic_providers": ["cape", "anyrun"],
+  "dynamic_url": "http://127.0.0.1:8000",
+  "dynamic_urls": {
+    "cape": "http://127.0.0.1:8000",
+    "joesandbox": ""
+  },
+  "dynamic_token": "",
+  "dynamic_tokens": {
+    "anyrun": "",
+    "joesandbox": ""
+  },
+  "dynamic_timeout": 1800,
+  "dynamic_poll_interval": 10,
+  "dynamic_machine": "",
+  "dynamic_package": "",
+  "dynamic_allow_remote": false
+}
+```
+
+One or more providers can be selected as defaults, and each WebGUI job can
+override that selection under **Advanced options**. Selected providers run
+concurrently; a failure or quota error from one provider does not discard
+successful results from another. Multi-provider runs retain separate
+`.dynamic.<provider>.json` artifacts.
+
+Only localhost, IP-literal private, and explicitly private-suffixed CAPE
+hostnames are accepted by default. To use a hosted service, store its credential
+in the matching `dynamic_tokens` entry (the Settings page does this automatically)
+and select it under **Advanced options**. Hosted support uses the vendors'
+maintained `anyrun-sdk` and `jbxapi` packages. CAPE must provide its own isolated
+malware network, automatic snapshot rollback, and an analysis-only Windows
+guest; never attach that guest to a production or household network.
+
+### Optional VirusTotal enrichment
+
+VirusTotal enrichment is disabled by default. When enabled, REcluse first looks
+up the sample's SHA-256 using the VirusTotal API v3. A hash lookup does not send
+the file contents. Configure the feature from the Settings page or in
+`config.json`:
+
+```json
+{
+  "virustotal_enabled": true,
+  "virustotal_api_key": "replace-with-vt-api-key",
+  "virustotal_upload_missing": false,
+  "virustotal_allow_upload": false,
+  "virustotal_timeout": 300,
+  "virustotal_poll_interval": 15
+}
+```
+
+Unknown samples are not uploaded by default. Public upload requires both
+`virustotal_upload_missing` and `virustotal_allow_upload`; enabling them
+discloses the sample to VirusTotal and may make it available to VirusTotal
+partners or community users. This is distinct from VirusTotal Private Scanning,
+which requires a separate licensed API. The API key is write-only in the GUI,
+omitted from job responses, and passed to the analysis process through an
+environment variable.
+
+In the WebGUI, upload is never a saved default. It is a secondary per-job
+checkbox beneath the provider. Public/community-facing uploads open a warning
+that requires the analyst to type `acknowledge`; the server independently
+rejects the request without that acknowledgement. Hash lookups remain available
+without uploading bytes.
+
+### Triage, UnpacMe, and abuse.ch enrichment
+
+Recorded Future Triage searches by SHA-256 before any optional submission.
+UnpacMe requires an explicit upload choice for every analysis and requests a
+private submission when configured and supported by the account. The abuse.ch
+bundle correlates the SHA-256 against MalwareBazaar, ThreatFox, and URLhaus.
+MalwareBazaar submission is intentionally not exposed: REcluse uses it only for
+hash lookup because submitted samples are community-facing and its upload API is
+intended for confirmed, fresh malware.
 
 Extensions are used only as a final hint. A PowerShell payload renamed to `.malz`, for example, is routed from its syntax rather than sent to a binary analyzer.
 
@@ -88,6 +181,11 @@ cd REcluse
 chmod +x setup.sh recluse run-web
 ./setup.sh
 ```
+
+Setup preserves an existing Docker installation, including Docker CE installed
+from Docker's upstream repository. On a host without Docker it installs Debian's
+engine and CLI without optional Buildx packages; REcluse uses the Docker API and
+does not require Buildx.
 
 After setup, log out and back in if your current shell has not picked up membership in the `docker` group.
 
@@ -137,13 +235,23 @@ You can also manage persistent defaults from the GUI's **Settings** page. Stored
 
 ## Web analyst console
 
-Start the localhost-only web application:
+Setup installs and starts the localhost-only WebGUI as a systemd service. Open
+[http://127.0.0.1:8743](http://127.0.0.1:8743). Common service commands are:
 
 ```bash
-./run-web
+systemctl status recluse-web.service
+sudo systemctl restart recluse-web.service
+journalctl -u recluse-web.service -f
 ```
 
-Then open [http://127.0.0.1:8080](http://127.0.0.1:8080).
+For foreground development, stop the service and run `./run-web`. It uses port
+8743 unless `RECLUSE_WEB_PORT` is set.
+
+To override the service port, create a systemd drop-in with
+`sudo systemctl edit recluse-web.service`, add an `[Service]` section containing
+`Environment=RECLUSE_WEB_PORT=9876`, then run
+`sudo systemctl daemon-reload` followed by
+`sudo systemctl restart recluse-web.service`.
 
 The interface provides:
 
@@ -152,14 +260,51 @@ The interface provides:
 - Optional API-key override and report-root selection
 - Single-worker analysis queue to avoid competing for model/GPU resources
 - Live Conductor output
-- Downloadable reports, transcripts, and recovered scripts
+- Persistent analysis history with downloadable reports, transcripts, and recovered scripts
+- Guarded deletion of finished analyses and their generated artifacts
 - Persistent endpoint and default configuration
 
 Choose another port without exposing the service beyond localhost:
 
 ```bash
-RECLUSE_WEB_PORT=8090 ./run-web
+RECLUSE_WEB_PORT=9876 ./run-web
 ```
+
+### FastAPI integration
+
+The console also exposes a local REST API. Interactive OpenAPI documentation is
+available at [http://127.0.0.1:8743/api/docs](http://127.0.0.1:8743/api/docs),
+and the raw schema is available at `/api/openapi.json`.
+
+Check readiness and submit a sample using the configured analysis defaults:
+
+```bash
+curl http://127.0.0.1:8743/api/health
+
+curl -sS -X POST http://127.0.0.1:8743/api/jobs \
+  -F 'sample=@suspicious-file.7z' \
+  -F 'password=infected'
+```
+
+The submission returns HTTP `202` and a job object containing its `id`. Poll the
+job until `status` is `completed` or `failed`:
+
+```bash
+curl -sS http://127.0.0.1:8743/api/jobs/JOB_ID
+```
+
+Completed jobs list their artifacts. Retrieve raw JSON or text content without
+the browser viewer redirect:
+
+```bash
+curl -o artifact.json \
+  http://127.0.0.1:8743/api/jobs/JOB_ID/artifact-content/ARTIFACT_PATH
+```
+
+Optional multipart fields include `model`, `api_key`, `reports_dir`,
+`max_turns`, `max_tool_errors`, and `verbose`. Omitted fields use the persistent
+defaults configured in the GUI. The API intentionally binds to localhost by
+default and has no authentication; do not expose it to an untrusted network.
 
 ## Command-line usage
 
@@ -179,6 +324,43 @@ Common overrides:
   --verbose
 ```
 
+Broad REMnux enrichment is enabled by default and uses the official MCP server's
+Scenario 1 Docker connector. Each payload is copied into a fresh offline REMnux
+container; the host-side connector uses stdio and is sandboxed to that job's
+staging directory. Select a faster tier or disable it when resources are tight:
+
+```bash
+./recluse suspicious-file.7z --remnux-depth standard
+./recluse suspicious-file.7z --no-remnux
+```
+
+VirusTotal can be enabled per CLI run. The API key can be stored in
+`config.json`, supplied with `--virustotal-api-key`, or set in
+`RECLUSE_VIRUSTOTAL_API_KEY`:
+
+```bash
+RECLUSE_VIRUSTOTAL_API_KEY='…' \
+  ./recluse suspicious-file.7z --virustotal
+
+# Explicitly disclose and upload only when the hash is unknown:
+./recluse suspicious-file.7z \
+  --virustotal \
+  --virustotal-upload-missing \
+  --virustotal-allow-upload
+```
+
+CAPE summaries exclude a small default set of recurring Windows VM baseline
+network indicators from verdict scoring. The complete CAPE JSON is never
+modified. To replace the defaults with a baseline captured from your own VM,
+set `cape_noise_domains` and `cape_noise_ips` in `config.json`:
+
+```json
+{
+  "cape_noise_domains": ["cdn.onenote.net"],
+  "cape_noise_ips": ["40.90.64.229"]
+}
+```
+
 View every option:
 
 ```bash
@@ -193,6 +375,9 @@ For each analyzed member, REcluse can produce:
 <sample>.report.json
 <sample>.transcript.json
 <sample>.deobfuscated.txt   # when script obfuscation is recovered
+<sample>.dynamic.json       # full sandbox report when enabled and completed
+<sample>.remnux.json        # full REMnux MCP tool-chain results
+<sample>.virustotal.json    # full VT API response when a report is available
 ```
 
 Reports include sample hashes, detected file type, identification method, selected route, completion status, model, tool evidence, validation failures, quality scoring, verdict, capabilities, IOCs, and exact evidence references.

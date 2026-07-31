@@ -4,7 +4,7 @@ USER root
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN python3 -m venv /opt/script-mcp \
-    && /opt/script-mcp/bin/pip install --no-cache-dir "mcp[cli]"
+    && /opt/script-mcp/bin/pip install --no-cache-dir "mcp[cli]>=1.28,<2"
 
 COPY script_mcp_server.py /opt/script_mcp_server.py
 
