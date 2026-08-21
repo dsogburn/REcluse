@@ -1,0 +1,3 @@
+#!/bin/bash
+PROJECT_DIR="$(dirname "$(dirname "$(readlink -f "$0")")")"
+exec "$PROJECT_DIR/venv/bin/uvicorn" webapp:app --app-dir "$PROJECT_DIR" --host 127.0.0.1 --port "${RECLUSE_WEB_PORT:-8743}"

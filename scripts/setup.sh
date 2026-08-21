@@ -3,8 +3,8 @@
 
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_DIR"
 
 echo "[*] Verifying Debian/Ubuntu development dependencies..."
 sudo apt update
@@ -45,23 +45,23 @@ npm install --omit=dev
 
 if [ ! -f config.json ]; then
     echo "[*] Initializing empty config.json from template..."
-    cp config.json.template config.json
+    cp config/config.json.template config.json
 fi
 
 echo "[*] Installing localhost WebGUI systemd service..."
-INSTALL_USER="${SUDO_USER:-$(stat -c '%U' "$SCRIPT_DIR")}"
+INSTALL_USER="${SUDO_USER:-$(stat -c '%U' "$PROJECT_DIR")}"
 if [ "$INSTALL_USER" = "root" ]; then
     echo "[-] Refusing to install the WebGUI service as root."
-    echo "    Run setup.sh from a non-root checkout as that user (do not prefix the script with sudo)."
+    echo "    Run scripts/setup.sh from a non-root checkout as that user (do not prefix the script with sudo)."
     exit 1
 fi
 escape_sed_replacement() {
     printf '%s' "$1" | sed 's/[&|\\]/\\&/g'
 }
 SERVICE_USER="$(escape_sed_replacement "$INSTALL_USER")"
-SERVICE_DIR="$(escape_sed_replacement "$SCRIPT_DIR")"
-if [[ "$SCRIPT_DIR" =~ [[:space:]] ]]; then
-    echo "[-] The system service requires a checkout path without whitespace: $SCRIPT_DIR"
+SERVICE_DIR="$(escape_sed_replacement "$PROJECT_DIR")"
+if [[ "$PROJECT_DIR" =~ [[:space:]] ]]; then
+    echo "[-] The system service requires a checkout path without whitespace: $PROJECT_DIR"
     exit 1
 fi
 SERVICE_TEMP="$(mktemp --suffix=.service)"
@@ -69,7 +69,7 @@ trap 'rm -f "$SERVICE_TEMP"' EXIT
 sed \
     -e "s|@RECLUSE_USER@|$SERVICE_USER|g" \
     -e "s|@RECLUSE_DIR@|$SERVICE_DIR|g" \
-    recluse-web.service.in > "$SERVICE_TEMP"
+    systemd/recluse-web.service.in > "$SERVICE_TEMP"
 systemd-analyze verify "$SERVICE_TEMP"
 sudo install -o root -g root -m 0644 "$SERVICE_TEMP" /etc/systemd/system/recluse-web.service
 sudo systemctl daemon-reload

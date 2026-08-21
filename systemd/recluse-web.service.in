@@ -10,7 +10,7 @@ User=@RECLUSE_USER@
 SupplementaryGroups=docker
 WorkingDirectory=@RECLUSE_DIR@
 Environment=RECLUSE_WEB_PORT=8743
-ExecStart=@RECLUSE_DIR@/run-web
+ExecStart=@RECLUSE_DIR@/scripts/run-web
 Restart=on-failure
 RestartSec=5s
 TimeoutStopSec=30s

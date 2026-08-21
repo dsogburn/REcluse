@@ -193,11 +193,11 @@ def ensure_docker_images_exist():
     docker_client = ensure_docker_client()
     low = docker_client.api
     required_images = {
-        "triage-ghidra-mcp": ("Dockerfile.ghidra", False),
-        "triage-ilspy-mcp": ("Dockerfile.ilspy", False),
-        "triage-jadx-mcp": ("Dockerfile.jadx", False),
-        "triage-maldoc-mcp": ("Dockerfile.maldoc", True),
-        "triage-script-mcp": ("Dockerfile.script", True),
+        "triage-ghidra-mcp": ("containers/Dockerfile.ghidra", False),
+        "triage-ilspy-mcp": ("containers/Dockerfile.ilspy", False),
+        "triage-jadx-mcp": ("containers/Dockerfile.jadx", False),
+        "triage-maldoc-mcp": ("containers/Dockerfile.maldoc", True),
+        "triage-script-mcp": ("containers/Dockerfile.script", True),
     }
     try:
         docker_client.images.get("remnux/remnux-distro:noble")
@@ -1039,7 +1039,7 @@ async def run_remnux_mcp_analysis(
     if not server_binary.is_file():
         return {
             "status": "unavailable",
-            "error": "REMnux MCP server is not installed; run ./setup.sh",
+            "error": "REMnux MCP server is not installed; run ./scripts/setup.sh",
         }
 
     container_name = f"recluse-remnux-{uuid.uuid4().hex[:12]}"

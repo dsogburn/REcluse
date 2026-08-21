@@ -202,8 +202,8 @@ The included setup script installs host dependencies, creates `venv/`, installs 
 ```bash
 git clone <your-repository-url>
 cd REcluse
-chmod +x setup.sh recluse run-web
-./setup.sh
+chmod +x scripts/setup.sh scripts/run-web recluse
+./scripts/setup.sh
 ```
 
 Setup preserves an existing Docker installation, including Docker CE installed
@@ -218,7 +218,7 @@ After setup, log out and back in if your current shell has not picked up members
 Copy the safe template before first use:
 
 ```bash
-cp config.json.template config.json
+cp config/config.json.template config.json
 ```
 
 `config.json` is intentionally ignored by Git because it can contain credentials.
@@ -268,7 +268,7 @@ sudo systemctl restart recluse-web.service
 journalctl -u recluse-web.service -f
 ```
 
-For foreground development, stop the service and run `./run-web`. It uses port
+For foreground development, stop the service and run `./scripts/run-web`. It uses port
 8743 unless `RECLUSE_WEB_PORT` is set.
 
 To override the service port, create a systemd drop-in with
@@ -296,7 +296,7 @@ The interface provides:
 Choose another port without exposing the service beyond localhost:
 
 ```bash
-RECLUSE_WEB_PORT=9876 ./run-web
+RECLUSE_WEB_PORT=9876 ./scripts/run-web
 ```
 
 ### FastAPI integration
@@ -438,7 +438,7 @@ Reports include sample hashes, detected file type, identification method, select
 Submitted samples and generated reports are excluded by `.gitignore`. Keep those artifacts in an access-controlled case-management location rather than source control.
 
 The ignored `Resources/` directory is available for disposable analyst test
-scripts and sample material. Automated `test_*.py` regression tests remain
+scripts and sample material. Automated `tests/test_*.py` regression tests remain
 tracked because they are project source. `config.json`, `.env` files, report
 directories, uploads, decoded outputs, and WebGUI job manifests are also
 ignored to reduce the risk of committing credentials or case evidence.
@@ -467,20 +467,13 @@ cape_client.py            CAPE API client and report normalization
 sandbox_client.py         Dynamic sandbox provider abstraction
 virustotal_client.py      VirusTotal lookup and optional upload client
 online_enrichment.py      abuse.ch and UnpacMe integrations
-maldoc_mcp_server.py      Static malicious-document tools
-script_mcp_server.py      Non-executing script deobfuscation tools
-Dockerfile.ghidra         Native reverse-engineering image
-Dockerfile.ilspy          .NET reverse-engineering image
-Dockerfile.jadx           Android reverse-engineering image
-Dockerfile.maldoc         REMnux document-analysis image
-Dockerfile.script         Static script-analysis image
 recluse                   CLI launcher
-run-web                   Web launcher
-setup.sh                  Host bootstrap
-recluse-web.service.in    Localhost systemd service template
-config.json.template      Safe configuration example
+containers/               Analyzer images, MCP servers, and build helpers
+scripts/                  Host bootstrap and WebGUI launcher
+systemd/                  Localhost service template
+config/                   Safe configuration example
 Resources/                Ignored analyst test scripts and samples
-test_*.py                 Tracked regression tests
+tests/                    Tracked regression tests
 ```
 
 ## Responsible use

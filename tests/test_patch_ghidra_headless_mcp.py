@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from patch_ghidra_headless_mcp import AFTER, BEFORE, MARKER, patch_backend
+from containers.patch_ghidra_headless_mcp import AFTER, BEFORE, MARKER, patch_backend
 
 
 class PatchGhidraHeadlessMcpTests(unittest.TestCase):

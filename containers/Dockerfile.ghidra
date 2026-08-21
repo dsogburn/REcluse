@@ -34,7 +34,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
       nltk \
       git+https://github.com/mrphrazer/ghidra-headless-mcp
 
-COPY patch_ghidra_headless_mcp.py /tmp/patch_ghidra_headless_mcp.py
+COPY containers/patch_ghidra_headless_mcp.py /tmp/patch_ghidra_headless_mcp.py
 RUN BACKEND_PATH="$(python3 -c 'import ghidra_headless_mcp.backend as backend; print(backend.__file__)')" && \
     python3 /tmp/patch_ghidra_headless_mcp.py "$BACKEND_PATH" && \
     rm /tmp/patch_ghidra_headless_mcp.py
@@ -62,7 +62,7 @@ RUN mkdir -p /opt/ghidra/headless_scripts \
     /home/remnux/samples \
     /home/remnux/projects
 
-COPY DisableWindowsResourceReferenceAnalyzer.java /opt/ghidra/headless_scripts/DisableWindowsResourceReferenceAnalyzer.java
+COPY containers/DisableWindowsResourceReferenceAnalyzer.java /opt/ghidra/headless_scripts/DisableWindowsResourceReferenceAnalyzer.java
 
 RUN chown -R remnux:remnux \
     /home/remnux/samples \

@@ -84,7 +84,7 @@ class AnyRunClient:
             from anyrun.connectors import SandboxConnector
         except ImportError as exc:
             raise RuntimeError(
-                "ANY.RUN support requires the anyrun-sdk package; rerun setup.sh"
+                "ANY.RUN support requires the anyrun-sdk package; rerun scripts/setup.sh"
             ) from exc
 
         key = self.api_key
@@ -123,7 +123,7 @@ class JoeSandboxClient:
             import jbxapi
         except ImportError as exc:
             raise RuntimeError(
-                "Joe Sandbox support requires the jbxapi package; rerun setup.sh"
+                "Joe Sandbox support requires the jbxapi package; rerun scripts/setup.sh"
             ) from exc
 
         joe = jbxapi.JoeSandbox(

@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN python3 -m venv /opt/maldoc-mcp \
     && /opt/maldoc-mcp/bin/pip install --no-cache-dir "mcp[cli]>=1.28,<2"
 
-COPY maldoc_mcp_server.py /opt/maldoc_mcp_server.py
+COPY containers/maldoc_mcp_server.py /opt/maldoc_mcp_server.py
 
 RUN mkdir -p /home/remnux/samples \
     && chown -R remnux:remnux /home/remnux/samples /opt/maldoc-mcp
